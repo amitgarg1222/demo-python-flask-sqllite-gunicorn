@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flask + SQLite In-Memory Demo</title>
+  <style>
+    :root {
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --border: #d0d7de;
+      --text: #1f2328;
+      --muted: #656d76;
+      --accent: #0969da;
+      --danger: #cf222e;
+      --success: #1a7f37;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 720px;
+      margin: 3rem auto;
+      padding: 0 1rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    h1 { font-size: 1.35rem; margin: 0; }
+    .badge {
+      font-size: 0.8rem;
+      background: #ddf4ff;
+      color: var(--accent);
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .meta {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+    }
+    form.add-form {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+    button {
+      padding: 0.55rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #f6f8fa;
+      color: var(--text);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+    button.danger {
+      color: var(--danger);
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    li:last-child { border-bottom: none; }
+    .task-title.done {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+    .task-time {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .actions {
+      display: flex;
+      gap: 0.4rem;
+    }
+    footer {
+      margin-top: 1.25rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <h1>Task Tracker</h1>
+      <span class="badge">SQLite In-Memory DB</span>
+    </header>
+
+    <div class="meta">
+      Server UTC Time: <strong>{{ now }}</strong> &middot; Data resets on process restart.
+    </div>
+
+    <form class="add-form" action="{{ url_for('add_task') }}" method="post">
+      <input type="text" name="title" placeholder="Enter a new task..." required>
+      <button type="submit" class="primary">Add Task</button>
+    </form>
+
+    <ul>
+      {% for task in tasks %}
+      <li>
+        <div>
+          <span class="task-title {% if task['completed'] %}done{% endif %}">
+            {{ task['title'] }}
+          </span>
+          <span class="task-time">Added {{ task['created_at'] }}</span>
+        </div>
+        <div class="actions">
+          <form action="{{ url_for('toggle_task', task_id=task['id']) }}" method="post">
+            <button type="submit">{% if task['completed'] %}Undo{% else %}Done{% endif %}</button>
+          </form>
+          <form action="{{ url_for('delete_task', task_id=task['id']) }}" method="post">
+            <button type="submit" class="danger">Delete</button>
+          </form>
+        </div>
+      </li>
+      {% else %}
+      <li>No tasks in memory yet. Add one above.</li>
+      {% endfor %}
+    </ul>
+
+    <footer>
+      <span>JSON Endpoints: <a href="/api/tasks">/api/tasks</a> &middot; <a href="/api/health">/api/health</a></span>
+      <span>Powered by Flask &amp; Gunicorn</span>
+    </footer>
+  </div>
+</body>
+</html>
